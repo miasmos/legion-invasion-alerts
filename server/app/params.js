@@ -1,15 +1,38 @@
 import {Response} from './response/Response'
 import {ErrorExtended as Error} from './response/Error'
-import {instance as Enum} from '../../core/enums'
+import {instance as Enum} from './enums'
+import 'bluebird'
+let Joi = require('joi-browser')
+
+class Validator {
+	Validate(schema, param) {
+		return new Promise((resolve, reject) => {
+			Joi.validate(param, schema, (error, value) => {
+				if (error === null) {
+					resolve()
+				} else {
+					reject(error)
+				}
+			})
+		})
+	}
+
+	NotificationToken(param) {
+		let schema = Joi.string().min(152).max(152).required()
+		return this.Validate(schema, param)
+	}
+}
 
 class Params {
 	constructor() {
-		this.routes = []
+		this.routes = ['NotificationToken']
+		this.validator = new Validator()
+		console.log(this.validator.Validate)
 	}
 
-	// hash(request, response, id) {
-	// 	return false
-	// }
+	NotificationToken(request, response, id) {
+		return false
+	}
 
 	Apply(server) {
 		for (let key in this.routes) {
@@ -22,29 +45,17 @@ class Params {
 				}
 
 				if (!error) {
-					error = Validate[route].call(this, request.params[route])
-
-					if (!error) {
-						next()
-					} else {
-						Response.Error(response, error)
-					}
+					this.validator[route].call(this.validator, request.params[route])
+						.then(next)
+						.catch(error => {
+							Response.Error(response, new Error(Enum.error.message.INVALID_PARAM_TOKEN, Enum.error.code.BAD_REQUEST))
+						})
 				} else {
 					Response.Error(response, error)
 				}
 			})
 		}
 	}
-}
-
-class Validate {
-	// static hash(param) {
-	// 	if (validator.isAlphanumeric(param)) {
-	// 		return false
-	// 	} else {
-	// 		return new Error(Enum.error.message.INVALID_PARAM_HASH, Enum.error.code.BAD_REQUEST)
-	// 	}
-	// }
 }
 
 export let instance = new Params()

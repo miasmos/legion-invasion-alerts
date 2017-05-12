@@ -1,5 +1,5 @@
 'use strict'
-import {instance as Enum} from '../../../core/enums'
+import {instance as Enum} from '../enums'
 
 export class Response {
 	static Ok(res, data) {

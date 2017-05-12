@@ -3,9 +3,7 @@ class Enums {
 		this.error = {
 			message: {
 				"NOT_FOUND": "Whoops. That page doesn't exist.",
-				"INVALID_PARAM_HASH": "Invalid hash supplied.",
-				"INVALID_PARAM_URL": "Invalid URL supplied.",
-				"INVALID_PARAM_RECAPTCHA_TOKEN": "Invalid recaptcha token supplied.",
+				"INVALID_PARAM_TOKEN": "Invalid token supplied.",
 				"RATE_LIMITED": "Your request was rate limited. Try again later.",
 				"GENERIC_ERROR": "An undiagnosed error has occurred.",
 				"CORS": "This resource is restricted to the shortr.li domain.",
@@ -29,6 +27,21 @@ class Enums {
 		this.boolean = {
 			TRUE: 1,
 			FALSE: 0
+		}
+
+		this.Notifications = {
+			ENDING_SOON: {
+				title: 'Legion Invasion Alerts',
+				body: 'The invasion in %s is ending in %s.',
+			},
+			STARTING_SOON: {
+				title: 'Legion Invasion Alerts',
+				body: 'An invasion in %s is starting in %s.'
+			},
+			STARTING_NOW: {
+				title: 'Legion Invasion Alerts',
+				body: 'An invasion in %s is starting now.'
+			}
 		}
 	}
 }

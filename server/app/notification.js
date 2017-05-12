@@ -1,19 +1,36 @@
 import 'bluebird'
+import {instance as Enum} from './enums'
 
-var config = require('./config.json'),
+var config = require('./credentials.json'),
+	uuid = require('uuid'),
 	fcm = new (require('fcm-node'))(config.fcm.key)
 
 class Notification {
-	Send(token, name, message, date, senderId) {
+	StartingNow(token) {
+		let n = Enum.Notifications.STARTING_NOW
+		return this.Send(token, n.title, n.body)
+	}
+
+	StartingSoon(token) {
+		let n = Enum.Notifications.STARTING_SOON
+		return this.Send(token, n.title, n.body)
+	}
+
+	EndingSoon(token) {
+		let n = Enum.Notifications.ENDING_SOON
+		return this.Send(token, n.title, n.body)
+	}
+
+	Send(token, title, message) {
 		return new Promise((reject, resolve) => {
-			fcm.send(this.MakeNotification(token, name, message, date, senderId), (error, response) => {
+			fcm.send(this._MakeNotification(token, title, message), (error, response) => {
 				if (error) reject(error)
 				else resolve(response)
 			})
 		})
 	}
 
-	MakeNotification(token, title = config.appname, body, date, senderId, foreground = false) {
+	_MakeNotification(token, title = config.appname, body, foreground = false) {
 		return {
 			to: token,
 			data: {
@@ -25,8 +42,7 @@ class Notification {
 					priority: 'high',
 					icon: 'ic_launcher',
 					sound: 'blank',
-					id: senderId,
-					my_custom_data: date,
+					id: uuid.v4(),
 					show_in_foreground: foreground,
 				}
 			}
@@ -34,4 +50,4 @@ class Notification {
 	}
 }
 
-export let instance = new Notification
+export let instance = new Notification()
