@@ -1,0 +1,11 @@
+{
+	"appname": "legion-invasion-alerts",
+	"certificate": {
+		"key": "/var/node/poole.fyi/cert/privkey.pem",
+		"cert": "/var/node/poole.fyi/cert/cert.pem",
+		"chain": "/var/node/poole.fyi/cert/fullchain.pem"
+	},
+	"host": "localhost",
+	"protocol": "https",
+	"port": 69
+}

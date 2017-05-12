@@ -1,0 +1,45 @@
+{
+  "project_info": {
+    "project_number": "1074513506332",
+    "firebase_url": "https://invasionalerts.firebaseio.com",
+    "project_id": "invasionalerts",
+    "storage_bucket": "invasionalerts.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074513506332:android:d5ee5a6e9b0df557",
+        "android_client_info": {
+          "package_name": "com.legioninvasionalerts"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074513506332-rifl662lrsii0vo388trq249f0sqg7ms.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTYeHIJqGKfMYRmGVHddJGVh374P0_XAs"
+        },
+        {
+          "current_key": "AIzaSyDb_u0nrUiOidBuKb0s1fLYEsd0RbZ5vtA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
