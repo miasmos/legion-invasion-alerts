@@ -7,5 +7,8 @@
 	},
 	"host": "localhost",
 	"protocol": "https",
-	"port": 69
+	"port": 69,
+	"seed": 1495067400,
+	"invasion_duration": 6,
+	"invasion_interval": 12.5
 }

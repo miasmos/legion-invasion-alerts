@@ -24,13 +24,13 @@ class Notification {
 	Send(token, title, message) {
 		return new Promise((reject, resolve) => {
 			fcm.send(this._MakeNotification(token, title, message), (error, response) => {
-				if (error) reject(error)
+				if (!!error) reject(error)
 				else resolve(response)
 			})
 		})
 	}
 
-	_MakeNotification(token, title = config.appname, body, foreground = false) {
+	_MakeNotification(token, title = config.appname, body, foreground = true) {
 		return {
 			to: token,
 			data: {
@@ -41,8 +41,7 @@ class Notification {
 					color: '#c7c7c7',
 					priority: 'high',
 					icon: 'ic_launcher',
-					sound: 'blank',
-					id: uuid.v4(),
+					id: 1,
 					show_in_foreground: foreground,
 				}
 			}

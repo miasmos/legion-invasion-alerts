@@ -29,18 +29,25 @@ class Enums {
 			FALSE: 0
 		}
 
-		this.Notifications = {
-			ENDING_SOON: {
-				title: 'Legion Invasion Alerts',
-				body: 'The invasion in %s is ending in %s.',
+		this.notifications = {
+			types: {
+				ENDING_SOON: 0,
+				STARTING_SOON: 1,
+				STARTING_NOW: 2
 			},
-			STARTING_SOON: {
-				title: 'Legion Invasion Alerts',
-				body: 'An invasion in %s is starting in %s.'
-			},
-			STARTING_NOW: {
-				title: 'Legion Invasion Alerts',
-				body: 'An invasion in %s is starting now.'
+			messages: {
+				0: {
+					title: 'Legion Invasion Alerts',
+					body: 'The invasion is ending soon! 1 hour left.',
+				},
+				1: {
+					title: 'Legion Invasion Alerts',
+					body: 'An invasion is starting in 1 hour.'
+				},
+				2: {
+					title: 'Legion Invasion Alerts',
+					body: 'An invasion is starting now.'
+				}
 			}
 		}
 	}

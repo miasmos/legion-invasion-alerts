@@ -6,8 +6,9 @@ export default class Models {
 
 		this.User = connection.define('User', {
 			token: {
-				type: Sequelize.STRING,
+				type: Sequelize.STRING(),
 				field: 'notificationToken',
+				primaryKey: true,
 				allowNull: false
 			}
 		}, {
