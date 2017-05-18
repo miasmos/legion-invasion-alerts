@@ -3,31 +3,73 @@ import 'bluebird'
 
 class Store  {
 	constructor() {
-		this.user = undefined
+		this.settings = undefined
 	}
 
-	SaveUser(id, token) {
-		this.user = {id, session_token: token, date: Date.now()}
-		return store.save('user', this.user)
+	SaveSetting(name, value) {
+		if (!this.settings) {
+			store.get('settings')
+				.then(settings => {
+					if (!!settings) this.settings = settings
+					else this.settings = {}
+					finalize.call(this)
+				})
+				.catch(error => console.error(error))
+		} else {
+			finalize.call(this)
+		}
+
+		function finalize() {
+			this.settings[name] = value
+			store.save('settings', this.settings)
+				.catch(error => console.error(error))
+		}
 	}
 
-	GetUser() {
+	GetSetting(name) {
 		return new Promise((resolve, reject) => {
-			if (!!this.user) resolve(this.user)
-			else {
-				store.get('user')
-					.then(user => {
-						this.user = user
-						resolve(user)
+			if (!this.settings) {
+				store.get('settings')
+					.then(settings => {
+						if (!!settings) this.settings = settings
+						else this.settings = {}
+						finalize.call(this)
 					})
 					.catch(error => reject(error))
+			} else {
+				finalize.call(this)
+			}
+
+			function finalize() {
+				resolve(name in this.settings ? this.settings[name] : undefined)
 			}
 		})
 	}
 
-	RemoveUser() {
-		this.user = undefined
-		return store.delete('user')
+	GetSettings() {
+		return new Promise((resolve, reject) => {
+			if (!this.settings) {
+				store.get('settings')
+					.then(settings => {
+						if (!!settings) this.settings = settings
+						else this.settings = {}
+						finalize.call(this)
+					})
+					.catch(error => reject(error))
+			} else {
+				finalize.call(this)
+			}
+
+			function finalize() {
+				resolve(this.settings)
+			}
+		})
+	}
+
+	RemoveSetting(name) {
+		if (name in this.settings) delete this.settings[name]
+		store.save('settings', this.settings)
+			.catch(error => console.error(error))
 	}
 }
 

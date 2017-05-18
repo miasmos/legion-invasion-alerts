@@ -10,47 +10,72 @@ class Invasions extends Observer {
 		this.seed = config.seed
 		this.duration = config.invasion_duration
 		this.interval = config.invasion_interval
+		this.sent = {
+			start: false,
+			hourBeforeStart: false,
+			hourBeforeEnd: false
+		}
 		this.next = {
 			start: undefined,
 			hourBeforeStart: undefined,
-			hourBeforeEnd: undefined
+			hourBeforeEnd: undefined,
+			end: undefined
 		}
 
-		let temp = moment(this.seed, 'X'),
-            now = moment()
+		let nextMoment = this.GetNextInvasion(moment(this.seed, 'X')),
+            now = moment(),
+            isActive = false
 
-        while(true) {
-            if (temp.isAfter(now)) {
-                this.next = this.GetNextInvasion(temp)
-                break
-            } else {
-                temp = temp.add(this.duration + this.interval, 'hours')
-            }
+        while(!((nextMoment.start.isAfter(now) && isActive) || (nextMoment.end.isAfter(now) && !isActive))) {
+            isActive = !isActive
+            nextMoment = this.GetNextInvasion(nextMoment.start)
         }
+        this.next = nextMoment
 
 		setInterval(this.Tick.bind(this), 1000)
 	}
 
-	GetNextInvasion(start) {
-		start = !!start ? start : this.next.start.add(this.duration + this.interval, 'hours')
-		return {
-			start: start,
-			hourBeforeStart: start.subtract(1, 'hours'),
-			hourBeforeEnd: start.add(this.duration - 1)
+	GetNextInvasion(invasion) {
+		invasion = !!invasion ? invasion.clone() : this.next.start.clone()
+		let obj = {
+			start: invasion.add(this.duration + this.interval, 'hours'),
+			hourBeforeStart: invasion.clone().subtract(1, 'hours'),
+			hourBeforeEnd: invasion.clone().add(this.duration - 1),
+			end: invasion.clone().add(this.duration, 'hours')
 		}
+
+		console.log('New invasion: starting', obj.start.format('LLL'), ', ending', obj.end.format('LLL'))
+		return obj
 	}
 
 	Tick() {
-		let now = Date.now()
+		let now = moment()
 
-		if (this.next.start.isBefore(now)) {
-			this.next = this.GetNextInvasion()
-			this.emit(Enum.notifications.STARTING_NOW)
-		} else if (this.next.hourBeforeStart.isBefore(now)) {
-			this.emit(Enum.notifications.STARTING_SOON)
-		} else if (this.next.hourBeforeEnd.isBefore(now)) {
-			this.emit(Enum.notifications.ENDING_SOON)
+		if (this.WasAMinuteOrLessAgo(now, this.next.start) && !this.sent.start) {
+			this.sent.start = true
+			this.emit(Enum.notifications.types.STARTING_NOW)
 		}
+		if (this.WasAMinuteOrLessAgo(now, this.next.hourBeforeStart) && !this.sent.hourBeforeStart) {
+			this.sent.hourBeforeStart = true
+			this.emit(Enum.notifications.types.STARTING_SOON)
+		}
+		if (this.WasAMinuteOrLessAgo(now, this.next.hourBeforeEnd) && !this.sent.hourBeforeEnd) {
+			this.sent.hourBeforeEnd = true
+			this.emit(Enum.notifications.types.ENDING_SOON)
+		}
+		if (this.WasAMinuteOrLessAgo(now, this.next.end)) {
+			this.next = this.GetNextInvasion()
+			this.sent = {
+				hourBeforeStart: false,
+				hourBeforeEnd: false,
+				start: false
+			}
+		}
+	}
+
+	WasAMinuteOrLessAgo(start, end) {
+		let diff = moment.duration(start.diff(end)).asMinutes()
+		return diff <= 1 && diff >= 0
 	}
 }
 

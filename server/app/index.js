@@ -36,41 +36,65 @@ class App {
 		server.Start()
 
 		Invasions.on(Enum.notifications.types.STARTING_NOW, () => {
+			console.log('Sending STARTING_NOW')
 			this.SendNotification('STARTING_NOW')
+				.catch(error => console.error(error))
 		})
 
 		Invasions.on(Enum.notifications.types.STARTING_SOON, () => {
+			console.log('Sending STARTING_SOON')
 			this.SendNotification('STARTING_SOON')
+				.catch(error => console.error(error))
 		})
 
 		Invasions.on(Enum.notifications.types.ENDING_SOON, () => {
+			console.log('Sending ENDING_SOON')
 			this.SendNotification('ENDING_SOON')
+				.catch(error => console.error(error))
 		})
 
-		setTimeout(() => {Invasions.emit(Enum.notifications.types.STARTING_NOW)}, 3000)
-		setTimeout(() => {Invasions.emit(Enum.notifications.types.STARTING_SOON)}, 6000)
-		setTimeout(() => {Invasions.emit(Enum.notifications.types.ENDING_SOON)}, 9000)
+		setTimeout(() => Invasions.emit(Enum.notifications.types.STARTING_SOON), 1000)
 	}
 
 	SendNotification(notificationType) {
-		if (!(notificationType in Enum.notifications.types)) return
+		return new Promise((resolve, reject) => {
+			if (!(notificationType in Enum.notifications.types)) resolve()
 
-		this.db.User.GetAll()
-			.then(results => {
-				if (!!results && results.length) {
-					results.map(json => {
-						let message = Enum.notifications.messages[Enum.notifications.types[notificationType]]
+			this.db.User.GetAll()
+				.then(results => {
+					if (!!results && results.length) {
+						results.map(json => {
+							let message = Enum.notifications.messages[Enum.notifications.types[notificationType]]
 
-						Notification.Send(json.token, message.title, message.body)
-							.catch(error => {
-								console.error(error)
-							})
-					})
-				}
-			})
-			.catch(error => {
-				console.error(error)
-			})
+							Notification.Send(json.token, message.title, message.body)
+								.then(response => {
+									try {
+										let json1 = JSON.parse(response)
+
+										if ('results' in json1 && json1.results.length) {
+											let results = json1.results[0]
+
+											if ('error' in results && results.error === 'InvalidRegistration') {
+												this.db.User.Destroy(json.token)
+													.then(() => resolve())
+													.catch(error => reject(error))
+											}
+										}
+									} catch(error) {
+										reject(error)
+										return
+									}
+
+									resolve(response)
+								})
+								.catch(error => reject(error))
+						})
+					} else {
+						resolve()
+					}
+				})
+				.catch(error => reject(error))
+		})
 	}
 }
 

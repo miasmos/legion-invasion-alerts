@@ -51,6 +51,14 @@ export default class User extends Table {
 		})
 	}
 
+	Destroy(token) {
+		return this.model.destroy({
+			where: {
+				token: token
+			}
+		})
+	}
+
 	UpdateToken(id, token) {
 		return this.model.update({
 			token: token
