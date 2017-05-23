@@ -11,9 +11,19 @@ class Validator {
 				if (error === null) {
 					resolve()
 				} else {
-					reject(error)
+					reject(new Error(Enum.error.message.INVALID_PARAM_TOKEN, Enum.error.code.BAD_REQUEST))
 				}
 			})
+		})
+	}
+
+	_default(condition, error) {
+		return new Promise((resolve, reject) => {
+			if (condition) {
+				resolve()
+			} else {
+				reject(error)
+			}
 		})
 	}
 
@@ -21,16 +31,24 @@ class Validator {
 		let schema = Joi.string().min(152).max(152).required()
 		return this.Validate(schema, param)
 	}
+
+	Locale(param) {
+		return this._default(param === 'us' || param === 'eu' || param === 'oc', new Error(Enum.error.message.INVALID_PARAM_LOCALE, Enum.error.code.BAD_REQUEST))
+	}
 }
 
 class Params {
 	constructor() {
-		this.routes = ['NotificationToken']
+		this.routes = ['NotificationToken', 'Locale']
 		this.validator = new Validator()
 		console.log(this.validator.Validate)
 	}
 
 	NotificationToken(request, response, id) {
+		return false
+	}
+
+	Locale() {
 		return false
 	}
 
@@ -48,7 +66,7 @@ class Params {
 					this.validator[route].call(this.validator, request.params[route])
 						.then(next)
 						.catch(error => {
-							Response.Error(response, new Error(Enum.error.message.INVALID_PARAM_TOKEN, Enum.error.code.BAD_REQUEST))
+							Response.Error(response, error)
 						})
 				} else {
 					Response.Error(response, error)

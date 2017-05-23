@@ -2,15 +2,17 @@ import React, { Component } from 'react'
 import { AppRegistry, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { NativeRouter, Route, Link, Redirect, Switch, AndroidBackButton } from 'react-router-native'
 import { instance as Store } from './js/services/Store'
+import { instance as Geolocation } from './js/services/Geolocation'
 import { instance as Enum } from './js/core/enums'
 import { instance as GlobalStyles } from './js/global-styles'
 import { instance as AndroidNotification } from './js/services/Notification'
 import InvasionAlertsAPI from './js/services/InvasionAlertsAPI'
 
+import ChooseLocale from './js/components/ChooseLocale'
+
 var moment = require('moment'),
     config = require('./config.json')
 
-GlobalStyles.Load()
 console.disableYellowBox = true
 
 export default class LegionInvasionAlerts extends Component {
@@ -18,10 +20,13 @@ export default class LegionInvasionAlerts extends Component {
         super()
         this.state = {
             app: {
-                loading: true
+                loading: true,
+                token: undefined,
+                locale: 'us',
+                didSetLocale: false
             },
             invasion: {
-                seed: "1495067400",
+                seed: "1495519200",
                 moment: undefined,
                 timeUntil: '',
                 datetime: '',
@@ -42,17 +47,25 @@ export default class LegionInvasionAlerts extends Component {
                     ...this.state,
                     app: {
                         ...this.state.app,
-                        loading: false
+                        loading: false,
+                        locale: 'locale' in settings && typeof settings.locale !== 'undefined' ? settings.locale : this.state.app.locale,
+                        didSetLocale: 'didSetLocale' in settings && typeof settings.didSetLocale !== 'undefined' ? settings.didSetLocale : this.state.app.didSetLocale
                     },
                     invasion: {
                         ...this.state.invasion,
                         seed: 'seed' in settings && typeof settings.seed !== 'undefined' ? settings.seed : this.state.invasion.seed,
                     },
-                    showTimeUntil: 'showTimeUntil' in settings && typeof settings.showTimeUntil !== 'undefined' ? settings.showTimeUntil : this.state.invasion.showTimeUntil
+                    showTimeUntil: 'showTimeUntil' in settings && typeof settings.showTimeUntil !== 'undefined' ? settings.showTimeUntil : this.state.showTimeUntil
                 })
             })
             .catch(error => {
-                this.setState({ loading: false })
+                this.setState({
+                    ...this.state,
+                    app: {
+                        ...this.state.app,
+                        loading: false
+                    }
+                })
                 console.error(error)
             })
             .finally(() => {
@@ -97,26 +110,30 @@ export default class LegionInvasionAlerts extends Component {
         let word = this.state.invasion.isActive ? 'ends' : 'begins',
             color = this.state.invasion.isSoon && this.state.invasion.isActive ? '#d73e3e' : '#333333'
 
-        let innerElement = this.state.app.loading ? (
-            <View></View>
-        ) : (
-            <View>
-                <Text style={styles.welcome}>
-                    {this.state.showTimeUntil ? `Invasion ${word} in` : `Invasion ${word}`}
-                </Text>
-                <Text style={[styles.welcome, {color: color}]}>
-                    {this.state.showTimeUntil ? this.state.invasion.timeUntil : this.state.invasion.datetime}
-                </Text>
-            </View>
-        )
-
         return (
-            <TouchableOpacity onPress={this.ToggleDateFormat.bind(this)}>
-                <View style={styles.container}>
-                    {innerElement}
-                </View>
-            </TouchableOpacity>
-        );
+            this.state.app.loading ? (
+                <View></View>
+            ) : !this.state.app.didSetLocale ? (
+                <ChooseLocale setLocale={this.SetLocale.bind(this)} />
+            ) : (
+                <TouchableOpacity onPress={this.ToggleDateFormat.bind(this)}>
+                    <View>
+                        <Text>
+                            {this.state.showTimeUntil ? `Invasion ${word} in` : `Invasion ${word}`}
+                        </Text>
+                        <Text style={[{color: color}]}>
+                            {this.state.showTimeUntil ? this.state.invasion.timeUntil : this.state.invasion.datetime}
+                        </Text>
+                    </View>
+                </TouchableOpacity>
+            )
+        )
+    }
+
+    componentWillUpdate(props, state) {
+        if (this.state.app.locale !== state.app.locale) {
+            this.OnLocaleChange(state.app.locale)
+        }
     }
 
     Tick() {
@@ -152,13 +169,43 @@ export default class LegionInvasionAlerts extends Component {
     }
 
     OnTokenChange(token) {
-        InvasionAlertsAPI.Token(token)
+        InvasionAlertsAPI.Locale(token, this.state.locale)
             .then(json => {
-                console.log('successfully stored token:', token)
+                console.log('successfully stored token:', token, this.state.locale)
             })
             .catch(error => {
                 console.error(error)
             })
+
+        this.setState({
+            ...this.state,
+            app: {
+                ...this.state.app,
+                token: token
+            }
+        })
+    }
+
+    OnLocaleChange(locale) {
+        if (!!this.state.app.token) {
+            InvasionAlertsAPI.Locale(this.state.app.token, locale)
+                .then(json => {
+                    console.log(json)
+                })
+                .catch(error => console.error(error))
+        }
+
+        if (!this.state.app.didSetLocale) {
+            this.setState({
+                ...this.state,
+                app: {
+                    ...this.state.app,
+                    didSetLocale: true
+                }
+            })
+
+            Store.SaveSetting('didSetLocale', true)
+        }
     }
 
     GetTimeUntilInvasion(invasion) {
@@ -201,24 +248,22 @@ export default class LegionInvasionAlerts extends Component {
             showTimeUntil: !this.state.showTimeUntil
         })
     }
+
+    SetLocale(locale) {
+        Store.SaveSetting('locale', locale)
+
+        this.setState({
+            ...this.state,
+            app: {
+                ...this.state.app,
+                locale: locale
+            }
+        })
+    }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    welcome: {
-        fontSize: 20,
-        textAlign: 'center',
-        margin: 10,
-    },
-    instructions: {
-        textAlign: 'center',
-        color: '#333333',
-        marginBottom: 5,
-    },
+
 })
 
 AppRegistry.registerComponent('LegionInvasionAlerts', () => LegionInvasionAlerts)

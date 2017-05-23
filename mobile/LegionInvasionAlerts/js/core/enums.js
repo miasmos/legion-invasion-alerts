@@ -30,6 +30,12 @@ class Enums {
 			TRUE: 1,
 			FALSE: 0
 		}
+
+		this.locale = {
+			us: 0,
+			eu: 1,
+			oc: 2
+		}
 	}
 }
 

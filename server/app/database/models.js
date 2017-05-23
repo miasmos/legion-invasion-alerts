@@ -10,6 +10,12 @@ export default class Models {
 				field: 'notificationToken',
 				primaryKey: true,
 				allowNull: false
+			},
+			locale: {
+				type: Sequelize.STRING(),
+				field: 'locale',
+				primaryKey: false,
+				allowNull: false
 			}
 		}, {
 			freezeTableName: true

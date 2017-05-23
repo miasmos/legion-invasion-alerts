@@ -1,0 +1,6 @@
+Change timer to reflect locale
+Transition animations
+Fix locale change triggering 3 api requests
+Add button to top-right of main screen to change locale
+General app styling
+Add geolocation support?

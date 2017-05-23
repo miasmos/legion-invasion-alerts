@@ -4,6 +4,7 @@ class Enums {
 			message: {
 				"NOT_FOUND": "Whoops. That page doesn't exist.",
 				"INVALID_PARAM_TOKEN": "Invalid token supplied.",
+				"INVALID_PARAM_LOCALE": "Invalid locale supplied.",
 				"RATE_LIMITED": "Your request was rate limited. Try again later.",
 				"GENERIC_ERROR": "An undiagnosed error has occurred.",
 				"CORS": "This resource is restricted to the shortr.li domain.",

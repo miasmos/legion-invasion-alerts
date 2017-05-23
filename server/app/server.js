@@ -18,7 +18,7 @@ export default class Server {
 		let server = http.createServer(this.app)
 
 		server.listen(4000, () => {
-			console.log(`Server listening on port 4000`)
+			console.log(`Server listening`)
 		})
 
 		this.server = server

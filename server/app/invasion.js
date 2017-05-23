@@ -4,10 +4,10 @@ import Observer from './util/Observer'
 var config = require('./config.json'),
 	moment = require('moment')
 
-class Invasions extends Observer {
-	constructor() {
+export class Invasion extends Observer {
+	constructor(seed) {
 		super()
-		this.seed = config.seed
+		this.seed = seed
 		this.duration = config.invasion_duration
 		this.interval = config.invasion_interval
 		this.sent = {
@@ -22,30 +22,38 @@ class Invasions extends Observer {
 			end: undefined
 		}
 
-		let nextMoment = this.GetNextInvasion(moment(this.seed, 'X')),
+		let seedMoment = moment(this.seed, config.seedFormat)
+		console.log('Invasion seed:', seedMoment.format('LLL'))
+		let nextMoment = this.GetNextInvasion(seedMoment, false),
             now = moment(),
-            isActive = false
+            isActive = this.InvasionIsActive(nextMoment)
 
         while(!((nextMoment.start.isAfter(now) && isActive) || (nextMoment.end.isAfter(now) && !isActive))) {
             isActive = !isActive
             nextMoment = this.GetNextInvasion(nextMoment.start)
         }
         this.next = nextMoment
-
-		setInterval(this.Tick.bind(this), 1000)
 	}
 
-	GetNextInvasion(invasion) {
+	GetNextInvasion(invasion, lookahead = true) {
 		invasion = !!invasion ? invasion.clone() : this.next.start.clone()
+
+		let addition = lookahead ? this.duration + this.interval : 0
+		let start = invasion.add(addition, 'hours')
 		let obj = {
-			start: invasion.add(this.duration + this.interval, 'hours'),
-			hourBeforeStart: invasion.clone().subtract(1, 'hours'),
-			hourBeforeEnd: invasion.clone().add(this.duration - 1),
-			end: invasion.clone().add(this.duration, 'hours')
+			start: start,
+			hourBeforeStart: start.clone().subtract(1, 'hours'),
+			hourBeforeEnd: start.clone().add(this.duration - 1),
+			end: start.clone().add(this.duration, 'hours')
 		}
 
 		console.log('New invasion: starting', obj.start.format('LLL'), ', ending', obj.end.format('LLL'))
 		return obj
+	}
+
+	InvasionIsActive(invasion) {
+		let now = Date.now()
+		return invasion.start.isBefore(now) && invasion.end.isAfter(now)
 	}
 
 	Tick() {
@@ -78,5 +86,3 @@ class Invasions extends Observer {
 		return diff <= 1 && diff >= 0
 	}
 }
-
-export let instance = new Invasions()

@@ -5,7 +5,7 @@ import {instance as Params} from './params'
 import {Response} from './response/Response'
 import {ErrorExtended as Error} from './response/Error'
 import Server from './server'
-import {instance as Invasions} from './Invasions'
+import {instance as InvasionManager} from './InvasionManager'
 import {instance as Notification} from './Notification'
 
 let config = require('./config.json'),
@@ -19,7 +19,20 @@ class App {
 		this.db = new Database(credentials.database)
 
 		server.Route('/token/:NotificationToken', (request, response) => {
-			this.db.User.Create(request.params.NotificationToken)
+			console.log(`/token/${request.params.NotificationToken.substring(0, 8)}...`)
+			this.db.User.Upsert(request.params.NotificationToken, 'us')
+				.then(result => {
+					Response.Ok(response)
+				})
+				.catch(error => {
+					console.log(error)
+					Response.Error(response, new Error(Enum.error.message.GENERIC_ERROR, Enum.error.code.ERROR))
+				})
+		})
+
+		server.Route('/locale/:NotificationToken/:Locale', (request, response) => {
+			console.log(`/locale/${request.params.NotificationToken.substring(0, 8)}.../${request.params.Locale}`)
+			this.db.User.Upsert(request.params.NotificationToken, request.params.Locale)
 				.then(result => {
 					Response.Ok(response)
 				})
@@ -35,32 +48,30 @@ class App {
 
 		server.Start()
 
-		Invasions.on(Enum.notifications.types.STARTING_NOW, () => {
-			console.log('Sending STARTING_NOW')
-			this.SendNotification('STARTING_NOW')
-				.catch(error => console.error(error))
+		InvasionManager.on(Enum.notifications.types.STARTING_NOW, (locale) => {
+			console.log(`Sending STARTING_NOW to ${locale}`)
+			this.SendNotification('STARTING_NOW', locale)
+					.catch(error => console.error(error))
 		})
 
-		Invasions.on(Enum.notifications.types.STARTING_SOON, () => {
-			console.log('Sending STARTING_SOON')
-			this.SendNotification('STARTING_SOON')
-				.catch(error => console.error(error))
+		InvasionManager.on(Enum.notifications.types.STARTING_SOON, (locale) => {
+			console.log(`Sending STARTING_SOON to ${locale}`)
+			this.SendNotification('STARTING_SOON', locale)
+					.catch(error => console.error(error))
 		})
 
-		Invasions.on(Enum.notifications.types.ENDING_SOON, () => {
-			console.log('Sending ENDING_SOON')
-			this.SendNotification('ENDING_SOON')
-				.catch(error => console.error(error))
+		InvasionManager.on(Enum.notifications.types.ENDING_SOON, (locale) => {
+			console.log(`Sending ENDING_NOW to ${locale}`)
+				this.SendNotification('ENDING_SOON', locale)
+					.catch(error => console.error(error))
 		})
-
-		setTimeout(() => Invasions.emit(Enum.notifications.types.STARTING_SOON), 1000)
 	}
 
-	SendNotification(notificationType) {
+	SendNotification(notificationType, locale) {
 		return new Promise((resolve, reject) => {
 			if (!(notificationType in Enum.notifications.types)) resolve()
 
-			this.db.User.GetAll()
+			this.db.User.GetByLocale(locale)
 				.then(results => {
 					if (!!results && results.length) {
 						results.map(json => {

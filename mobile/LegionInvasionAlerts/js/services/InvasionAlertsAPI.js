@@ -5,6 +5,10 @@ export default class InvasionAlertsAPI {
 		return this._resolve(`/token/${token}`)
 	}
 
+	static Locale(token, locale) {
+		return this._resolve(`/locale/${token}/${locale}`)
+	}
+
 	static _resolve(path) {
 		return new Promise((resolve, reject) => {
 			fetch(`http://10.15.44.158:4000${path}`)
