@@ -40,14 +40,17 @@ class Enums {
 				0: {
 					title: 'Legion Invasion Alerts',
 					body: 'The invasion is ending soon! 1 hour left.',
+					tweet: 'The {locale} invasion is ending in 1 hour.'
 				},
 				1: {
 					title: 'Legion Invasion Alerts',
-					body: 'An invasion is starting in 1 hour.'
+					body: 'An invasion is starting in 1 hour.',
+					tweet: 'The {locale} invasion is starting in 1 hour.'
 				},
 				2: {
 					title: 'Legion Invasion Alerts',
-					body: 'An invasion is starting now.'
+					body: 'An invasion is starting now.',
+					tweet: 'The {locale} invasion is starting now.'
 				}
 			}
 		}

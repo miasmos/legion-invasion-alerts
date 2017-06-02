@@ -4,6 +4,7 @@ import Database from './database/db'
 import {instance as Params} from './params'
 import {Response} from './response/Response'
 import {ErrorExtended as Error} from './response/Error'
+import {instance as Twitter} from './twitter'
 import Server from './server'
 import {instance as InvasionManager} from './InvasionManager'
 import {instance as Notification} from './Notification'
@@ -52,18 +53,27 @@ class App {
 			console.log(`Sending STARTING_NOW to ${locale}`)
 			this.SendNotification('STARTING_NOW', locale)
 					.catch(error => console.error(error))
+
+			Twitter.TweetAlert(Enum.notifications.types.STARTING_NOW, locale)
+				.catch(error => console.error(error))
 		})
 
 		InvasionManager.on(Enum.notifications.types.STARTING_SOON, (locale) => {
 			console.log(`Sending STARTING_SOON to ${locale}`)
 			this.SendNotification('STARTING_SOON', locale)
 					.catch(error => console.error(error))
+
+			Twitter.TweetAlert(Enum.notifications.types.STARTING_SOON, locale)
+				.catch(error => console.error(error))
 		})
 
 		InvasionManager.on(Enum.notifications.types.ENDING_SOON, (locale) => {
 			console.log(`Sending ENDING_NOW to ${locale}`)
 				this.SendNotification('ENDING_SOON', locale)
 					.catch(error => console.error(error))
+
+			Twitter.TweetAlert(Enum.notifications.types.ENDING_SOON, locale)
+				.catch(error => console.error(error))
 		})
 	}
 
